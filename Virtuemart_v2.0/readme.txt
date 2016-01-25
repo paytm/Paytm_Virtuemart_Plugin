@@ -21,15 +21,14 @@ Installation and Configuration
 3. Enable Paytm payment method in plugin manager.
 4. Login to Administrator Area - site administrator panel.
 5. Select VirtueMart Store panel in the drop list.
-6. Select VirtueMart Store panel in the drop list.
-7. Click on Shop in left menu than Click on Payment Methods.
-8. Give the Payment method name, and select YES to publish.
-9. Choose the paytm Payment Method in dropdown box. 
-10. Then Click on Save button to generate the configuration parameters.
-11. Go to the Configuration tab.
-12. Now you can fill the parameters listed in Configuration tab.
-13. You should give the paytm Merchant id, Secret key, Mode and description in the listed parameters on configuration tab. These parameters are Mandatory.
-14. Then click Save & Close.
+6. Click on Shop in left menu than Click on Payment Methods.
+7. Give the Payment method name, and select YES to publish.
+8. Choose the paytm Payment Method in dropdown box. 
+9. Then Click on Save button to generate the configuration parameters.
+10. Go to the Configuration tab.
+11. Now you can fill the parameters listed in Configuration tab.
+12. You should give the paytm Merchant id, Secret key, Mode and description in the listed parameters on configuration tab. These parameters are Mandatory.
+13. Then click Save & Close.
 
 
 
