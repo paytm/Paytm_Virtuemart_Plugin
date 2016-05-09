@@ -374,6 +374,8 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			  $checksum_recv = JRequest::getString('CHECKSUMHASH',0);
 			  $paramList = JRequest::get( 'post' );
 			  $amount = JRequest::getString('TXNAMOUNT',0);	
+			  $mode = JRequest::getString('PAYMENTMODE',0);
+			  $payment_id = JRequest::getString('TXNID',0);
 			  $all = ("'". $order_id ."''". $res_code ."''". $res_desc." " ."'");
 				
 			  if(verifychecksum_e($paramList, $method->secret_key, $checksum_recv)){
@@ -414,7 +416,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			  $modelOrder->updateStatusForOneOrder($virtuemart_order_id, $order, true);
 			  $cart = VirtueMartCart::getCart();
 			  
-			  $this->_storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $paymentTable->paytm_custom);
+			  $this->_storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $paymentTable->paytm_custom, $amount, $mode, $payment_id);
 			  if($res_code=="01"){		
 			  	$cart->emptyCart();
 			  	$html = $this->_getPaymentResponseHtml($paymentTable, $payment_name, $res_code, $res_desc);
@@ -456,7 +458,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		//return $html;
     }
     
-	function _storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $custom) {
+	function _storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $custom, $amount, $mode, $payment_id) {
 		$virtuemart_paymentmethod_id = $this->_getPaytmPluginCode()->virtuemart_paymentmethod_id;
 		$response_fields['payment_name'] = $this->renderPluginName($method);	
 		$response_fields['virtuemart_order_id'] = $virtuemart_order_id;
@@ -466,6 +468,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$response_fields['billing_currency'] = $method->payment_currency;
 		$response_fields['response_code'] = $res_code;
 		$response_fields['response_description'] = $res_desc;
+		$response_fields['amount'] = $amount;
+		$response_fields['mode'] = $mode;
+		$response_fields['payment_id'] = $payment_id;
 		$this->storePSPluginInternalData($response_fields, 'virtuemart_order_id', true);
 		return $response_fields;		
 		
