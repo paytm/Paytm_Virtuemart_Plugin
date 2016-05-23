@@ -346,7 +346,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$dbValues['amount'] = $amount;
 		$this->storePSPluginInternalData($dbValues);
 		if ($mode==0) {
-			$url = "pguat.paytm.in/oltp-web/processTransaction"; } //https://secure.paytm.in/oltp-web/processTransaction
+			$url = "pguat.paytm.com/oltp-web/processTransaction"; } //https://secure.paytm.in/oltp-web/processTransaction
 		else {
 			$url = "secure.paytm.in/oltp-web/processTransaction";
 		} 
