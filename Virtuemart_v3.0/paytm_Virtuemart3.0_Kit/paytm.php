@@ -126,6 +126,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		}
 		
 		$mode = $method->mode;
+		$callbackflag = $method->callbackflag; 
 		$log = $method->log;
 		
 		$product = $cart->products;
@@ -156,8 +157,13 @@ class plgVmPaymentPaytm extends vmPSPlugin {
       "TXN_AMOUNT" => $amount,
       "CHANNEL_ID" => $channel_id,
       "INDUSTRY_TYPE_ID" => $industry_type,
-      "WEBSITE" => $website_name
+      "WEBSITE" => $website_name,
     );	
+	
+	if($callbackflag == '1')
+		{
+			$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
+		}
 		
 	  function sanitizedURL($param) {
 	  	$pattern[0] = "%,%";
@@ -248,9 +254,12 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		    "TXN_AMOUNT" => $amount,    
 		    "CUST_ID" =>$email,
             "txnDate" =>date('Y-m-d H:i:s'),
-			"CHECKSUMHASH" =>$checksum,
+			"CHECKSUMHASH" =>$checksum,			
             );	
-		
+		if($callbackflag == '1')
+		{
+			$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
+		}
 		$dbValues['order_number'] = $order['details']['BT']->order_number;
 		$dbValues['payment_name'] = $this->renderPluginName($method, $order);
 		$dbValues['virtuemart_paymentmethod_id'] = $cart->virtuemart_paymentmethod_id;
