@@ -40,6 +40,10 @@
 	    <option value="0">TEST(Sandbox)</option>
 	    <option value="1">LIVE</option>
 	</param>
+	<param name="callbackflag" type="list" default="YES" label="CallBack URL">
+		<option value="0">NO</option>
+		<option value="1">YES</option>
+	 </param>
 	<param name="log" type="radio" default="ON" label="Log params posting to Paytm">
 		<option value="on">ON</option>
 		<option value="off">OFF</option>

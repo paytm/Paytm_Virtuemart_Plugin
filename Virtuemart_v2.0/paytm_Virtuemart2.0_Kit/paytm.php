@@ -26,6 +26,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			'website_name'=> array('','char'),
 			'channel_id'=> array('','char'),
 		    'mode' => array('','int'),
+		    'callbackflag' => array('','int'),
 			'log' => array('','char'),
 			'description' => array('','text'),
 		    'payment_logos' => array('', 'char'),
@@ -137,6 +138,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		    return false;
 		}
 		$mode = $method->mode;
+		$callbackflag = $method->callbackflag;
 		$log = $method->log;
 		$return_url = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id. '&orderId=' .JRequest::getVar('orderId'). '&responseCode=' .JRequest::getVar('responseCode'). '&responseDescription=' .JRequest::getVar('responseDescription'). '&checksum=' .JRequest::getVar('checksum'));
 		$product = $cart->products;
@@ -200,7 +202,12 @@ class plgVmPaymentPaytm extends vmPSPlugin {
             "CHANNEL_ID" => $channel_id,
             "INDUSTRY_TYPE_ID" => $industry_type,
             "WEBSITE" => $website_name
-            );	
+            );
+
+if($callbackflag == '1')
+		{
+			$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
+		}			
 		function sanitizedURL($param) {
 		$pattern[0] = "%,%";
 	        $pattern[1] = "%\(%";
@@ -336,7 +343,10 @@ class plgVmPaymentPaytm extends vmPSPlugin {
             "txnDate" =>date('Y-m-d H:i:s'),
 			"CHECKSUMHASH" =>$checksum,
             );	
-		
+		if($callbackflag == '1')
+		{
+			$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
+		}
 		$dbValues['order_number'] = $order['details']['BT']->order_number;
 		$dbValues['payment_name'] = $this->renderPluginName($method, $order);
 		$dbValues['virtuemart_paymentmethod_id'] = $cart->virtuemart_paymentmethod_id;
