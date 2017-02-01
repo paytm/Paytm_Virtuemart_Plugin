@@ -478,9 +478,28 @@ if($callbackflag == '1')
 			
 	if($res_code=="01")
 		{
+			// Create an array having all required parameters for status query.
+			$requestParamList = array("MID" => $method->merchant_id , "ORDERID" => $order_id);
 			
-			echo '<br><tr><td width="50%" align="center" valign="middle">Thank you for shopping with us. Your account has been charged and your transaction is successful. We will be shipping your order to you soon.</td></tr><br>';
-			$new_status = $method->status_success;
+			// Call the PG's getTxnStatus() function for verifying the transaction status.
+			if($mode=='0')
+			{
+				$check_status_url = 'https://pguat.paytm.com/oltp/HANDLER_INTERNAL/TXNSTATUS';
+			}
+			else
+			{
+				$check_status_url = 'https://secure.paytm.in/oltp/HANDLER_INTERNAL/TXNSTATUS';
+			}
+			$responseParamList = callAPI($check_status_url, $requestParamList);
+			if($responseParamList['STATUS']=='TXN_SUCCESS' && $responseParamList['TXNAMOUNT']==$amount)
+			{			
+				echo '<br><tr><td width="50%" align="center" valign="middle">Thank you for shopping with us. Your account has been charged and your transaction is successful. We will be shipping your order to you soon.</td></tr><br>';
+				$new_status = $method->status_success;
+			}
+			else{
+				echo '<tr><td width="50%" align="center" valign="middle">Security Error. Response compromised.</td> </tr>';
+				$new_status = $method->status_canceled;
+			}
 						
 		}
 		else
