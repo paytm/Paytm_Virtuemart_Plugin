@@ -501,7 +501,7 @@ if($callbackflag == '1')
 				$new_status = $method->status_success;
 			}
 			else{
-				echo '<tr><td width="50%" align="center" valign="middle">Security Error. Response compromised.</td> </tr>';
+				echo '<tr><td width="50%" align="center" valign="middle">It seems some issue in server to server communication. Kindly connect with administrator.</td> </tr>';
 				$new_status = $method->status_canceled;
 			}
 						
