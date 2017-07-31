@@ -414,7 +414,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 						$new_status = $method->status_success;
 					}
 					else{
-						echo '<tr><td width="50%" align="center" valign="middle">Security Error. Response compromised.</td></tr>';
+						echo '<tr><td width="50%" align="center" valign="middle">It seems some issue in server to server communication. Kindly connect with administrator.</td></tr>';
 						$cancel_return = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginUserPaymentCancel&on=' .$order_number.'&pm='.$virtuemart_paymentmethod_id);
 						echo "</br><a href='".$cancel_return."'><b>Go Back To Cart</a>";
 						$new_status = $method->status_canceled;
