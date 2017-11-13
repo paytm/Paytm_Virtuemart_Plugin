@@ -197,7 +197,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$post_variables = Array(
             "MID" => $merchant_id,
             "ORDER_ID" => $order_id,
-            "CUST_ID" =>$firstname,
+            "CUST_ID" =>$email,
             "TXN_AMOUNT" => $amount,
             "CHANNEL_ID" => $channel_id,
             "INDUSTRY_TYPE_ID" => $industry_type,
@@ -339,7 +339,7 @@ if($callbackflag == '1')
 			"INDUSTRY_TYPE_ID" => $industry_type,	
 		    "CHANNEL_ID" => $channel_id,
 		    "TXN_AMOUNT" => $amount,    
-		    "CUST_ID" =>$firstname,
+		    "CUST_ID" =>$email,
             "txnDate" =>date('Y-m-d H:i:s'),
 			"CHECKSUMHASH" =>$checksum,
             );	
