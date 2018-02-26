@@ -35,10 +35,12 @@
 	        <field type="text" name="industry_type"  size="60" label="PAYTM Industry Type"/>
 	        <field type="text" name="website_name"  size="60" label="PAYTM Website Name"/>
 	        <field type="text" name="channel_id"  size="60" label="PAYTM Channel Id"/>
-	        <field name="mode" type="list" default="TEST" label="Mode">
+	        <field type="text" name="transaction_url"  size="60" label="Transaction URL"/>
+	        <field type="text" name="transaction_status_url"  size="60" label="Transaction Status URL"/>
+	        <!-- <field name="mode" type="list" default="TEST" label="Mode">
 	            <option value="0">TEST(Sandbox)</option>
 	            <option value="1">LIVE</option>
-	        </field>
+	        </field> -->
 			<field name="callbackflag" type="list" default="YES" label="CallBack URL">
 	            <option value="0">NO</option>
 	            <option value="1">YES</option>

@@ -37,7 +37,8 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		    'billing_currency' => 'char(3) ',
 				'response_code' => 'int(11)',
 				'response_description' => 'varchar(225)',
-				'mode'=> 'int(2)',
+				'transaction_url'=> 'text',
+				'transaction_status_url'=> 'text',
 				'payment_id' => 'char(100)',
 				'description' => 'text',
 			);
@@ -125,7 +126,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		  return false;
 		}
 		
-		$mode = $method->mode;
+		// $mode = $method->mode;
+		$transaction_url = $method->transaction_url;
+		$transaction_status_url = $method->transaction_status_url;
 		$callbackflag = $method->callbackflag; 
 		$log = $method->log;
 		
@@ -268,14 +271,23 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$dbValues['billing_currency'] = $method->payment_currency;
 		$dbValues['amount'] = $amount;
 		$this->storePSPluginInternalData($dbValues);
-		if ($mode==0) {
-			$url = "pguat.paytm.com/oltp-web/processTransaction"; } 
-		else {
-			$url = "secure.paytm.in/oltp-web/processTransaction";
-		} 
+		/*	19751/17Jan2018	*/
+			/*if ($mode==0) {
+				$url = "pguat.paytm.com/oltp-web/processTransaction"; 
+			} else {
+				$url = "secure.paytm.in/oltp-web/processTransaction";
+			} */
+
+			/*if ($mode==0) {
+				$url = "securegw-stage.paytm.in/theia/processTransaction"; 
+			} else {
+				$url = "securegw.paytm.in/theia/processTransaction";
+			}*/ 
+		/*	19751/17Jan2018 end	*/
+		$url = $transaction_url;
 		// add spin image
 		$html = '<html><head><title>Redirection</title></head><body><div style="margin: auto; text-align: center;">';
-		$html .= '<form action="' . "https://" . $url . '" method="post" name="vm_paytm_form" >';
+		$html .= '<form action="' . $url . '" method="post" name="vm_paytm_form" >';
 		$html.= '<input type="submit"  value="' . JText::_('VMPAYMENT_PAYTM_REDIRECT_MESSAGE') . '" />';
 		foreach ($post_variables as $name => $value) {
 		    $html.= '<input type="hidden" style="" name="' . $name . '" value="' . $value . '" />';
@@ -383,7 +395,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			  $checksum_recv = JRequest::getString('CHECKSUMHASH',0);
 			  $paramList = JRequest::get( 'post' );
 			  $amount = JRequest::getString('TXNAMOUNT',0);	
-			  $mode = JRequest::getString('PAYMENTMODE',0);
+			  // $mode = JRequest::getString('PAYMENTMODE',0);
+			  $transaction_url = $method->transaction_url;
+			  $transaction_status_url = $method->transaction_status_url;
 			  $payment_id = JRequest::getString('TXNID',0);
 			  $all = ("'". $order_id ."''". $res_code ."''". $res_desc." " ."'");
 				
@@ -399,14 +413,20 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 					$requestParamList['CHECKSUMHASH'] = $StatusCheckSum;
 					
 					// Call the PG's getTxnStatus() function for verifying the transaction status.
-					if($mode=='0')
-					{
-						$check_status_url = 'https://pguat.paytm.com/oltp/HANDLER_INTERNAL/getTxnStatus';
-					}
-					else
-					{
-						$check_status_url = 'https://secure.paytm.in/oltp/HANDLER_INTERNAL/getTxnStatus';
-					}
+					/*	19751/17Jan2018	*/
+						/*if($mode=='0') {
+							$check_status_url = 'https://pguat.paytm.com/oltp/HANDLER_INTERNAL/getTxnStatus';
+						} else {
+							$check_status_url = 'https://secure.paytm.in/oltp/HANDLER_INTERNAL/getTxnStatus';
+						}*/
+
+						/*if($mode=='0') {
+							$check_status_url = 'https://securegw-stage.paytm.in/merchant-status/getTxnStatus';
+						} else {
+							$check_status_url = 'https://securegw.paytm.in/merchant-status/getTxnStatus';
+						}*/
+					/*	19751/17Jan2018 end	*/
+					$check_status_url = $transaction_status_url;
 					$responseParamList = callNewAPI($check_status_url, $requestParamList);
 					if($responseParamList['STATUS']=='TXN_SUCCESS' && $responseParamList['TXNAMOUNT']==$amount)
 					{			
@@ -451,7 +471,8 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			  $modelOrder->updateStatusForOneOrder($virtuemart_order_id, $order, true);
 			  $cart = VirtueMartCart::getCart();
 			  
-			  $this->_storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $paymentTable->paytm_custom, $amount, $mode, $payment_id);
+			  $this->_storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $paymentTable->paytm_custom, $amount, $transaction_url, $transaction_status_url, $payment_id);
+			  // $this->_storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $paymentTable->paytm_custom, $amount, $mode, $payment_id);
 			  if($res_code=="01"){		
 			  	$cart->emptyCart();
 			  	$html = $this->_getPaymentResponseHtml($paymentTable, $payment_name, $res_code, $res_desc);
@@ -493,7 +514,8 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		//return $html;
     }
     
-	function _storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $custom, $amount, $mode, $payment_id) {
+	// function _storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $custom, $amount, $mode, $payment_id) {
+	function _storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $custom, $amount, $transaction_url, $transaction_status_url, $payment_id) {
 		$virtuemart_paymentmethod_id = $this->_getPaytmPluginCode()->virtuemart_paymentmethod_id;
 		$response_fields['payment_name'] = $this->renderPluginName($method);	
 		$response_fields['virtuemart_order_id'] = $virtuemart_order_id;
@@ -504,7 +526,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$response_fields['response_code'] = $res_code;
 		$response_fields['response_description'] = $res_desc;
 		$response_fields['amount'] = $amount;
-		$response_fields['mode'] = $mode;
+		// $response_fields['mode'] = $mode;
+		$response_fields['transaction_url'] = $transaction_url;
+		$response_fields['transaction_status_url'] = $transaction_status_url;
 		$response_fields['payment_id'] = $payment_id;
 		$this->storePSPluginInternalData($response_fields, 'virtuemart_order_id', true);
 		return $response_fields;		
@@ -560,7 +584,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$html .= $this->getHtmlRowBE('PAYTM_RESPONSE_DESCRIPTION', $paymentTable->response_description);
 		$html .= $this->getHtmlRowBE('PAYTM_PAYMENT_ID', $paymentTable->payment_id);
 		$html .= $this->getHtmlRowBE('PAYTM_AMOUNT', $paymentTable->amount.' INR');
-		$html .= $this->getHtmlRowBE('PAYTM_MODE', $paymentTable->mode);
+		// $html .= $this->getHtmlRowBE('PAYTM_MODE', $paymentTable->mode);
+		$html .= $this->getHtmlRowBE('PAYTM_TRANSACTION_URL', $paymentTable->transaction_url);
+		$html .= $this->getHtmlRowBE('PAYTM_TRANSACTION_STATUS_URL', $paymentTable->transaction_status_url);
 		$html .= $this->getHtmlRowBE('PAYTM_PAYMENT_DATE', $paymentTable->modified_on);
 		$html .= '</table>' . "\n";
 		return $html;

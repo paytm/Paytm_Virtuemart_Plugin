@@ -25,7 +25,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			'industry_type'=> array('','char'),
 			'website_name'=> array('','char'),
 			'channel_id'=> array('','char'),
-		    'mode' => array('','int'),
+		    // 'mode' => array('','int'),
+		    'transaction_url' => array('','text'),
+		    'transaction_status_url' => array('','text'),
 		    'callbackflag' => array('','int'),
 			'log' => array('','char'),
 			'description' => array('','text'),
@@ -63,7 +65,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		    'billing_currency' => 'char(3) ',
 			'response_code' => 'int(11)',
 			'response_description' => 'varchar(225)',
-			'mode'=> 'int(2)',
+			// 'mode'=> 'int(2)',
+			'transaction_url'=> 'text',
+			'transaction_status_url'=> 'text',
 			'payment_id' => 'char(100)',
 			'description' => 'text',
 			
@@ -137,7 +141,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		    vmInfo(JText::_('VMPAYMENT_PAYTM_WEBSITE_NAME_NOT_SET'));
 		    return false;
 		}
-		$mode = $method->mode;
+		// $mode = $method->mode;
+		$transaction_url = $method->transaction_url;
+		$transaction_status_url = $method->transaction_status_url;
 		$callbackflag = $method->callbackflag;
 		$log = $method->log;
 		$return_url = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id. '&orderId=' .JRequest::getVar('orderId'). '&responseCode=' .JRequest::getVar('responseCode'). '&responseDescription=' .JRequest::getVar('responseDescription'). '&checksum=' .JRequest::getVar('checksum'));
@@ -208,7 +214,7 @@ if($callbackflag == '1')
 		{
 			$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
 		}			
-		function sanitizedURL($param) {
+	function sanitizedURL($param) {
 		$pattern[0] = "%,%";
 	        $pattern[1] = "%\(%";
        		$pattern[2] = "%\)%";
@@ -234,7 +240,7 @@ if($callbackflag == '1')
         	$sanitizedParam = preg_replace($pattern, "", $param);
 		return $sanitizedParam;
 	}
-		function sanitizedParam($param) {
+	function sanitizedParam($param) {
 		$pattern[0] = "%,%";
 	        $pattern[1] = "%#%";
 	        $pattern[2] = "%\(%";
@@ -281,7 +287,7 @@ if($callbackflag == '1')
 			}
 		}
 		
-		function calculateChecksum($secret_key, $all) {
+	function calculateChecksum($secret_key, $all) {
 			
 		
 		$hash = hash_hmac('sha256', $all , $secret_key);
@@ -290,11 +296,11 @@ if($callbackflag == '1')
 		return $checksum;
 	}
 	
-	if($log == "on")
-		{
-			error_log("All Params : ".$all);
-			error_log("Paytm Secret Key : ".$secret_key);
-		}
+		if($log == "on")
+			{
+				error_log("All Params : ".$all);
+				error_log("Paytm Secret Key : ".$secret_key);
+			}
 
 		//$checksum = calculateChecksum($secret_key,$all);
 		$checksum = getChecksumFromArray($post_variables, $secret_key);	
@@ -355,14 +361,23 @@ if($callbackflag == '1')
 		$dbValues['billing_currency'] = $method->payment_currency;
 		$dbValues['amount'] = $amount;
 		$this->storePSPluginInternalData($dbValues);
-		if ($mode==0) {
-			$url = "pguat.paytm.com/oltp-web/processTransaction"; } //https://secure.paytm.in/oltp-web/processTransaction
-		else {
-			$url = "secure.paytm.in/oltp-web/processTransaction";
-		} 
+		/*	19751/17Jan2018	*/
+			/*if ($mode==0) {
+				$url = "pguat.paytm.com/oltp-web/processTransaction";	//https://secure.paytm.in/oltp-web/processTransaction
+			}else {
+				$url = "secure.paytm.in/oltp-web/processTransaction";
+			} */
+
+			/*if ($mode==0) {
+				$url = "securegw-stage.paytm.in/theia/processTransaction";	//https://securegw-stage.paytm.in/theia/processTransaction
+			}else {
+				$url = "securegw.paytm.in/theia/processTransaction";
+			} */
+		/*	19751/17Jan2018 end	*/
+		$url = $transaction_url;
 		// add spin image
 		$html = '<html><head><title>Redirection</title></head><body><div style="margin: auto; text-align: center;">';
-		$html .= '<form action="' . "https://" . $url . '" method="post" name="vm_paytm_form" >';
+		$html .= '<form action="' . $url . '" method="post" name="vm_paytm_form" >';
 		$html.= '<input type="submit"  value="' . JText::_('VMPAYMENT_PAYTM_REDIRECT_MESSAGE') . '" />';
 		foreach ($post_variables as $name => $value) {
 		    $html.= '<input type="hidden" style="" name="' . $name . '" value="' . $value . '" />';
@@ -486,14 +501,20 @@ if($callbackflag == '1')
 			$requestParamList['CHECKSUMHASH'] = $StatusCheckSum;
 			
 			// Call the PG's getTxnStatus() function for verifying the transaction status.
-			if($mode=='0')
-			{
-				$check_status_url = 'https://pguat.paytm.com/oltp/HANDLER_INTERNAL/getTxnStatus';
-			}
-			else
-			{
-				$check_status_url = 'https://secure.paytm.in/oltp/HANDLER_INTERNAL/getTxnStatus';
-			}
+			/*	19751/17Jan2018	*/
+				/*if($mode=='0') {
+					$check_status_url = 'https://pguat.paytm.com/oltp/HANDLER_INTERNAL/getTxnStatus';
+				} else {
+					$check_status_url = 'https://secure.paytm.in/oltp/HANDLER_INTERNAL/getTxnStatus';
+				}*/
+
+				/*if($mode=='0') {
+					$check_status_url = 'https://securegw-stage.paytm.in/merchant-status/getTxnStatus';
+				} else {
+					$check_status_url = 'https://securegw.paytm.in/merchant-status/getTxnStatus';
+				}*/
+			/*	19751/17Jan2018 end	*/
+			$check_status_url = $method->transaction_status_url;
 			$responseParamList = callNewAPI($check_status_url, $requestParamList);
 			if($responseParamList['STATUS']=='TXN_SUCCESS' && $responseParamList['TXNAMOUNT']==$amount)
 			{			
@@ -638,7 +659,9 @@ if($callbackflag == '1')
 		$html .= $this->getHtmlRowBE('PAYTM_RESPONSE_DESCRIPTION', $paymentTable->response_description);
 		$html .= $this->getHtmlRowBE('PAYTM_PAYMENT_ID', $paymentTable->payment_id);
 		$html .= $this->getHtmlRowBE('PAYTM_AMOUNT', $paymentTable->amount.' INR');
-		$html .= $this->getHtmlRowBE('PAYTM_MODE', $paymentTable->mode);
+		// $html .= $this->getHtmlRowBE('PAYTM_MODE', $paymentTable->mode);
+		$html .= $this->getHtmlRowBE('PAYTM_TRANSACTION_URL', $paymentTable->transaction_url);
+		$html .= $this->getHtmlRowBE('PAYTM_TRANSACTION_STATUS_URL', $paymentTable->transaction_status_url);
 		$html .= $this->getHtmlRowBE('PAYTM_PAYMENT_DATE', $paymentTable->modified_on);
 		$html .= '</table>' . "\n";
 		return $html;

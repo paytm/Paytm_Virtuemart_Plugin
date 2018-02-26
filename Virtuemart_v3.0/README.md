@@ -25,5 +25,5 @@ The Plugin is provided in the form of a zip file.
  9. Then Click on Save button to generate the configuration parameters.
  10. Go to the Configuration tab.
  11. Now you can fill the parameters listed in Configuration tab.
- 12. You should give the paytm Merchant id, Secret key, Mode and description in the listed parameters on configuration tab. These parameters are Mandatory.
+ 12. You should give the paytm Merchant id, Secret key, Transaction URL, Transaction Status URL and description in the listed parameters on configuration tab. These parameters are Mandatory.
  13. Then click Save & Close.

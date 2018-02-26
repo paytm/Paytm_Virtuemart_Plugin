@@ -36,10 +36,11 @@
 	<param type="text" name="industry_type"  size="60" label="PAYTM Industry Type"/>
 	<param type="text" name="website_name"  size="60" label="PAYTM Website Name"/>
 	<param type="text" name="channel_id"  size="60" label="PAYTM Channel Id"/>
-	<param name="mode" type="list" default="TEST" label="Mode">
+	<param type="text" name="channel_id"  size="60" label="PAYTM Channel Id"/>
+	<!-- <param name="mode" type="list" default="TEST" label="Mode">
 	    <option value="0">TEST(Sandbox)</option>
 	    <option value="1">LIVE</option>
-	</param>
+	</param> -->
 	<param name="callbackflag" type="list" default="YES" label="CallBack URL">
 		<option value="0">NO</option>
 		<option value="1">YES</option>
