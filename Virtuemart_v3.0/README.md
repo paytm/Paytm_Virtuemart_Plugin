@@ -27,3 +27,12 @@ The Plugin is provided in the form of a zip file.
  11. Now you can fill the parameters listed in Configuration tab.
  12. You should give the paytm Merchant id, Secret key, Transaction URL, Transaction Status URL and description in the listed parameters on configuration tab. These parameters are Mandatory.
  13. Then click Save & Close.
+
+# Paytm PG URL Details
+	staging	
+		Transaction URL             => https://securegw-stage.paytm.in/theia/processTransaction
+		Transaction Status Url      => https://securegw-stage.paytm.in/merchant-status/getTxnStatus
+
+	Production
+		Transaction URL             => https://securegw.paytm.in/theia/processTransaction
+		Transaction Status Url      => https://securegw.paytm.in/merchant-status/getTxnStatus
