@@ -72,7 +72,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			'description' => 'text',
 			
 		);
-	return $SQLfields;
+		return $SQLfields;
 	}
 	
 	function plgVmConfirmedOrder($cart, $order) {		
@@ -99,10 +99,6 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 
 		if (!class_exists('TableVendors'))
 		    require(JPATH_VM_ADMINISTRATOR . DS . 'table' . DS . 'vendors.php');
-		/*$vendorModel = VmModel::getModel('Vendor');
-		$vendorModel->setId(1);
-		$vendor = $vendorModel->getVendor();
-		$vendorModel->addImages($vendor, 1);*/
 		$this->getPaymentCurrency($method);
 		$q = 'SELECT `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`="' . $method->payment_currency . '" ';
 		$db = JFactory::getDBO();
@@ -146,9 +142,8 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$transaction_status_url = $method->transaction_status_url;
 		$callbackflag = $method->callbackflag;
 		$log = $method->log;
-		$return_url = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id. '&orderId=' .JRequest::getVar('orderId'). '&responseCode=' .JRequest::getVar('responseCode'). '&responseDescription=' .JRequest::getVar('responseDescription'). '&checksum=' .JRequest::getVar('checksum'));
+		// $return_url = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id. '&orderId=' .JRequest::getVar('orderId'). '&responseCode=' .JRequest::getVar('responseCode'). '&responseDescription=' .JRequest::getVar('responseDescription'). '&checksum=' .JRequest::getVar('checksum'));
 		$product = $cart->products;
-		//echo "<pre>";print_r($method);echo "</pre>";
 		$description = $method->description;
 		$order_id = $order['details']['BT']->order_number;
 		$email = $order['details']['BT']->email;
@@ -166,113 +161,81 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		if(isset($address->address_2)){
 	    	$ship_address .=  " ".$address->address_2;
 		}
-		
-	/*	$post_variables = Array(
-		    "merchantIdentifier" => $merchant_id, 
-		    "orderId" => $order_id,
-			"returnUrl" => $return_url,
-			"buyerEmail" => $email,
-			"buyerFirstName" => $firstname,
-			"buyerLastName" => $lastname,
-			"buyerAddress" => $address,
-			"buyerCity" => $city,
-			"buyerState" => $state,
-			"buyerCountry" => $country,
-			"buyerPincode" =>  $zip,
-			"buyerPhoneNumber" => $phone,
-			"txnType" => 1,
-			"zpPayOption" => 1,
-			"mode" => $mode,
-			"currency" => $currency_code_3,
-			"amount" => $amount,	
-			"merchantIpAddress" => "127.0.0.1",  	//Merchant Ip Address
-			"purpose" => 1,
-			"productDescription" => "Order Id ".$order_id,		//$product->virtuemart_product_name,//$description,
-			"shipToAddress" => $ship_address,	
-			"shipToCity" => $address->city,			
-			"shipToState" => isset($address->virtuemart_state_id) ? ShopFunctions::getStateByID($address->virtuemart_state_id) : '',
-			"shipToCountry" => ShopFunctions::getCountryByID($address->virtuemart_country_id, 'country_2_code'),
-		    "shipToPincode" => $address->zip,
-		    "shipToPhoneNumber" => $address->phone_1,
-			"shipToFirstName" => $address->first_name,
-			"shipToLastName" => $address->last_name,
-			"txnDate" => date('Y-m-d'),
-						
-		); */
 
 		$post_variables = Array(
-            "MID" => $merchant_id,
-            "ORDER_ID" => $order_id,
-            "CUST_ID" =>$email,
-            "TXN_AMOUNT" => $amount,
-            "CHANNEL_ID" => $channel_id,
-            "INDUSTRY_TYPE_ID" => $industry_type,
-            "WEBSITE" => $website_name
-            );
+			"MID" => $merchant_id,
+			"ORDER_ID" => $order_id,
+			"CUST_ID" =>$email,
+			"TXN_AMOUNT" => $amount,
+			"CHANNEL_ID" => $channel_id,
+			"INDUSTRY_TYPE_ID" => $industry_type,
+			"WEBSITE" => $website_name
+		);
 
-if($callbackflag == '1')
-		{
-			$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
+		$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
+		if($customCallbackUrl != '') {
+			if (filter_var($customCallbackUrl, FILTER_VALIDATE_URL) === FALSE) {
+			    // die('Not a valid URL');
+			}else{
+				$post_variables["CALLBACK_URL"] = $customCallbackUrl;
+			}
 		}			
-	function sanitizedURL($param) {
-		$pattern[0] = "%,%";
-	        $pattern[1] = "%\(%";
-       		$pattern[2] = "%\)%";
-	        $pattern[3] = "%\{%";
-	        $pattern[4] = "%\}%";
-	        $pattern[5] = "%<%";
-	        $pattern[6] = "%>%";
-	        $pattern[7] = "%`%";
-	        $pattern[8] = "%!%";
-	        $pattern[9] = "%\\$%";
-	        $pattern[10] = "%\%%";
-	        $pattern[11] = "%\^%";
-	        $pattern[12] = "%\+%";
-	        $pattern[13] = "%\|%";
-	        $pattern[14] = "%\\\%";
-	        $pattern[15] = "%'%";
-	        $pattern[16] = "%\"%";
-	        $pattern[17] = "%;%";
-	        $pattern[18] = "%~%";
-	        $pattern[19] = "%\[%";
-	        $pattern[20] = "%\]%";
-	        $pattern[21] = "%\*%";
-        	$sanitizedParam = preg_replace($pattern, "", $param);
-		return $sanitizedParam;
-	}
-	function sanitizedParam($param) {
-		$pattern[0] = "%,%";
-	        $pattern[1] = "%#%";
-	        $pattern[2] = "%\(%";
-       		$pattern[3] = "%\)%";
-	        $pattern[4] = "%\{%";
-	        $pattern[5] = "%\}%";
-	        $pattern[6] = "%<%";
-	        $pattern[7] = "%>%";
-	        $pattern[8] = "%`%";
-	        $pattern[9] = "%!%";
-	        $pattern[10] = "%\\$%";
-	        $pattern[11] = "%\%%";
-	        $pattern[12] = "%\^%";
-	        $pattern[13] = "%=%";
-	        $pattern[14] = "%\+%";
-	        $pattern[15] = "%\|%";
-	        $pattern[16] = "%\\\%";
-	        $pattern[17] = "%:%";
-	        $pattern[18] = "%'%";
-	        $pattern[19] = "%\"%";
-	        $pattern[20] = "%;%";
-	        $pattern[21] = "%~%";
-	        $pattern[22] = "%\[%";
-	        $pattern[23] = "%\]%";
-	        $pattern[24] = "%\*%";
-	        $pattern[25] = "%&%";
-        	$sanitizedParam = preg_replace($pattern, "", $param);
-		return $sanitizedParam;
-	}
-
-	
-	
+		function sanitizedURL($param) {
+			$pattern[0] = "%,%";
+			$pattern[1] = "%\(%";
+			$pattern[2] = "%\)%";
+			$pattern[3] = "%\{%";
+			$pattern[4] = "%\}%";
+			$pattern[5] = "%<%";
+			$pattern[6] = "%>%";
+			$pattern[7] = "%`%";
+			$pattern[8] = "%!%";
+			$pattern[9] = "%\\$%";
+			$pattern[10] = "%\%%";
+			$pattern[11] = "%\^%";
+			$pattern[12] = "%\+%";
+			$pattern[13] = "%\|%";
+			$pattern[14] = "%\\\%";
+			$pattern[15] = "%'%";
+			$pattern[16] = "%\"%";
+			$pattern[17] = "%;%";
+			$pattern[18] = "%~%";
+			$pattern[19] = "%\[%";
+			$pattern[20] = "%\]%";
+			$pattern[21] = "%\*%";
+			$sanitizedParam = preg_replace($pattern, "", $param);
+			return $sanitizedParam;
+		}
+		function sanitizedParam($param) {
+			$pattern[0] = "%,%";
+			$pattern[1] = "%#%";
+			$pattern[2] = "%\(%";
+			$pattern[3] = "%\)%";
+			$pattern[4] = "%\{%";
+			$pattern[5] = "%\}%";
+			$pattern[6] = "%<%";
+			$pattern[7] = "%>%";
+			$pattern[8] = "%`%";
+			$pattern[9] = "%!%";
+			$pattern[10] = "%\\$%";
+			$pattern[11] = "%\%%";
+			$pattern[12] = "%\^%";
+			$pattern[13] = "%=%";
+			$pattern[14] = "%\+%";
+			$pattern[15] = "%\|%";
+			$pattern[16] = "%\\\%";
+			$pattern[17] = "%:%";
+			$pattern[18] = "%'%";
+			$pattern[19] = "%\"%";
+			$pattern[20] = "%;%";
+			$pattern[21] = "%~%";
+			$pattern[22] = "%\[%";
+			$pattern[23] = "%\]%";
+			$pattern[24] = "%\*%";
+			$pattern[25] = "%&%";
+			$sanitizedParam = preg_replace($pattern, "", $param);
+			return $sanitizedParam;
+		}
 		$all = '';
 		foreach($post_variables as $name => $value)	{
 			if($name != 'checksum') {
@@ -286,106 +249,140 @@ if($callbackflag == '1')
 				$all .= "'";
 			}
 		}
-		
-	function calculateChecksum($secret_key, $all) {
-			
-		
-		$hash = hash_hmac('sha256', $all , $secret_key);
-		$checksum = $hash;
-		
-		return $checksum;
-	}
 	
-		if($log == "on")
-			{
-				error_log("All Params : ".$all);
-				error_log("Paytm Secret Key : ".$secret_key);
-			}
-
-		//$checksum = calculateChecksum($secret_key,$all);
-		$checksum = getChecksumFromArray($post_variables, $secret_key);	
-	
-	/*$post_variables = Array(
-		    "merchantIdentifier" => $merchant_id, 
-		    "orderId" => $order_id,
-			"returnUrl" => $return_url,
-			"buyerEmail" => sanitizedParam($email),
-			"buyerFirstName" => sanitizedParam($firstname),
-			"buyerLastName" => sanitizedParam($lastname),
-			"buyerAddress" => sanitizedParam($address),
-			"buyerCity" => $city,
-			"buyerState" => $state, 
-			"buyerCountry" => $country,
-			"buyerPincode" =>  $zip,
-			"buyerPhoneNumber" => $phone,
-			"txnType" => 1,
-			'zpPayOption' => 1,
-			"mode" => $mode,
-			"currency" => $currency_code_3,
-			"amount" => $amount,
-			"merchantIpAddress" => "127.0.0.1", 
-			"purpose" => 1,
-			"productDescription" => "Order Id ".$order_id, //$product->virtuemart_product_name,	//$description,
-		    "shipToAddress" => sanitizedParam($ship_address),	
-			"shipToCity" => $address->city,			
-			"shipToState" => isset($address->virtuemart_state_id) ? ShopFunctions::getStateByID($address->virtuemart_state_id) : '',
-			"shipToCountry" => ShopFunctions::getCountryByID($address->virtuemart_country_id, 'country_2_code'),
-			"shipToPincode" => $address->zip,
-		    "shipToPhoneNumber" => $address->phone_1,
-			"shipToFirstName" => $address->first_name,
-			"shipToLastName" => $address->last_name,
-			"txnDate" => date('Y-m-d'),
-			"checksum" => $checksum,			
-		); */
-
-		$post_variables = Array(
-            "MID" => $merchant_id,
-            "ORDER_ID" => $order_id,
-			"WEBSITE" => $website_name, 
-			"INDUSTRY_TYPE_ID" => $industry_type,	
-		    "CHANNEL_ID" => $channel_id,
-		    "TXN_AMOUNT" => $amount,    
-		    "CUST_ID" =>$email,
-            "txnDate" =>date('Y-m-d H:i:s'),
-			"CHECKSUMHASH" =>$checksum,
-            );	
-		if($callbackflag == '1')
-		{
-			$post_variables["CALLBACK_URL"] = JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm';
+		if($log == "on") {
+			error_log("All Params : ".$all);
+			error_log("Paytm Secret Key : ".$secret_key);
 		}
+
+		$checksum = getChecksumFromArray($post_variables, $secret_key);	
+		
+		$post_variables['CHECKSUMHASH'] =$checksum;
 		$dbValues['order_number'] = $order['details']['BT']->order_number;
 		$dbValues['payment_name'] = $this->renderPluginName($method, $order);
 		$dbValues['virtuemart_paymentmethod_id'] = $cart->virtuemart_paymentmethod_id;
 		$dbValues['description'] = $description;
 		$dbValues['paytm_custom'] = $return_context;
 		$dbValues['billing_currency'] = $method->payment_currency;
+		$promocode_status = $method->promocode_status;
+		$local_validation = $method->local_validation;
+		$promocode_value = $method->promocode_value;
 		$dbValues['amount'] = $amount;
 		$this->storePSPluginInternalData($dbValues);
-		/*	19751/17Jan2018	*/
-			/*if ($mode==0) {
-				$url = "pguat.paytm.com/oltp-web/processTransaction";	//https://secure.paytm.in/oltp-web/processTransaction
-			}else {
-				$url = "secure.paytm.in/oltp-web/processTransaction";
-			} */
-
-			/*if ($mode==0) {
-				$url = "securegw-stage.paytm.in/theia/processTransaction";	//https://securegw-stage.paytm.in/theia/processTransaction
-			}else {
-				$url = "securegw.paytm.in/theia/processTransaction";
-			} */
-		/*	19751/17Jan2018 end	*/
 		$url = $transaction_url;
+
+		$extraConfigKey=$order['details']['BT']->virtuemart_paymentmethod_id;
 		// add spin image
 		$html = '<html><head><title>Redirection</title></head><body><div style="margin: auto; text-align: center;">';
-		$html .= '<form action="' . $url . '" method="post" name="vm_paytm_form" >';
-		$html.= '<input type="submit"  value="' . JText::_('VMPAYMENT_PAYTM_REDIRECT_MESSAGE') . '" />';
+		$autoSubmit=true;
+		if(isset($promocode_status) && isset($local_validation) && isset($promocode_value)){
+			if($promocode_status=='1'){
+				if(($local_validation=='1' && trim($promocode_value)!='') || $local_validation=='0'){
+					$html.=@'
+							<style type="text/css">
+								.borderRed{
+									border-color: red;
+								}
+								.blueBtn, .blueBtn:hover{
+									background-color: blue !important;
+									border-color: blue !important;
+								}
+								.redBtn, .redBtn:hover{
+									background-color: red !important;
+									border-color: red !important;
+								}
+								.redColor{
+									color: red !important;
+								}
+								.greenColor{
+									color: green !important;
+								}
+							</style>
+						  	<div class="form-group">
+						  		<div class="col-md-4">
+						  		</div>
+						  		<div class="col-md-8" style="margin-bottom: 5px;">
+									<span class="input-group-btn">
+						  				<input type="text" id="promoCode" class="form-control pull-left" placeholder="Paytm Promo Code" style="width: 70%;margin-bottom:0;">
+										<button id="" class="btn btn-primary pull-right btnPromoCode blueBtn" type="button">Apply</button>
+									</span>
+									<span class="messSpan" style="width:80%;float:left;text-align:left;"></span>
+						  		</div>
+						  	</div>
+					';
+					$autoSubmit=false;
+				}
+			}
+		}
+		$titName=JText::_('VMPAYMENT_PAYTM_REDIRECT_MESSAGE1');
+		if($autoSubmit){
+			$titName=JText::_('VMPAYMENT_PAYTM_REDIRECT_MESSAGE');
+		}
+		$html .= '<form action="' . $url . '" method="post" name="vm_paytm_form" id="checkout" >';
+		$html.= '<input type="submit"  value="' . $titName . '" style="margin:15px 20% 0 20%;" class="btn-primary" />';
+		$html.='<div class="hiddenFormPaytmFieldsDiv">';
 		foreach ($post_variables as $name => $value) {
 		    $html.= '<input type="hidden" style="" name="' . $name . '" value="' . $value . '" />';
 		}
+		$html.='</div>';
 
 		$html.= '</form></div>';
 		$html.= ' <script type="text/javascript">';
-		$html.= ' document.vm_paytm_form.submit();';
+		if($autoSubmit){
+			$html.= ' document.vm_paytm_form.submit();';
+
+		}else{
+			$html.= @'
+				jQuery(document).ready(function(){
+					jQuery(".btnPromoCode").click(function(){
+						jQuery(".messSpan").html("");
+						jQuery(".messSpan").removeClass("greenColor");
+						jQuery(".messSpan").removeClass("redColor");
+						if(jQuery.trim(jQuery("#promoCode").val())!=""){
+							if(jQuery(".btnPromoCode").hasClass("redBtn")){
+								jQuery("#promoCode").val("");
+							}
+							jQuery.ajax({
+								url: "index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm&extra=ajaxCall&extraConfigKey='.$extraConfigKey.'",
+								type: "post",
+								dataType: "json",
+								data: jQuery("form#checkout").serialize() + "&promoCode="+jQuery("#promoCode").val(),
+								success: function(res){
+									// console.log("jqueryAjax res".res);
+									if(res.message.length > 0){
+										if(res.message=="success"){
+											jQuery(".btnPromoCode").addClass("redBtn");
+											jQuery(".btnPromoCode").removeClass("blueBtn");
+											jQuery(".btnPromoCode").html("Remove");
+											jQuery("#promoCode").attr("disabled",true);
+											jQuery("#promoCode").prop("disabled",true);
+											jQuery(".messSpan").html("Applied Successfully");
+											jQuery(".messSpan").addClass("greenColor");
+										}else if(res.message=="remove"){
+											jQuery(".btnPromoCode").removeClass("redBtn");
+											jQuery(".btnPromoCode").addClass("blueBtn");
+											jQuery(".btnPromoCode").html("Apply");
+											jQuery("#promoCode").attr("disabled",false);
+											jQuery("#promoCode").prop("disabled",false);
+										}else{
+											jQuery(".messSpan").html("Incorrect Promo Code");
+											jQuery(".messSpan").addClass("redColor");
+											jQuery("#promoCode").addClass("borderRed");
+										}
+									}	
+									if(res.hiddenFields.length > 0){
+										jQuery(".hiddenFormPaytmFieldsDiv").html(res.hiddenFields);		
+									}
+								}
+							});
+							jQuery("#promoCode").removeClass("borderRed");
+						}else{
+							jQuery("#promoCode").addClass("borderRed");
+						}
+					});
+				});
+			';
+		}
 		$html.= ' </script></body></html>';
 	
 		// 	2 = don't delete the cart, don't send email and don't redirect
@@ -407,171 +404,253 @@ if($callbackflag == '1')
     }
 
     function plgVmOnPaymentResponseReceived(&$html) {
-		if (!class_exists('VirtueMartCart'))
-	    require(JPATH_VM_SITE . DS . 'helpers' . DS . 'cart.php');
-		if (!class_exists('shopFunctionsF'))
-		    require(JPATH_VM_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
-		if (!class_exists('VirtueMartModelOrders'))
-		    require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
-			$paytm_data = JRequest::get('post');
-		// the payment itself should send the parameter needed.
-		$virtuemart_paymentmethod_id = JRequest::getInt('pm', 0);
-		$order_number = JRequest::getString('on', 0);
-		
-		
-		$vendorId = 0;
-		if (!($method = $this->getVmPluginMethod($virtuemart_paymentmethod_id))) {
-		    return null; // Another method was selected, do nothing
-		}
-		if (!$this->selectedThisElement($method->payment_element)) {
-		    return null;
-		}	
-		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($order_number))) {
-		    return null;
-		}
-		if (!($paymentTable = $this->getDataByOrderId($virtuemart_order_id) )) {
-		    return '';
-		}
-		
-		$payment_name = $this->renderPluginName($method);
-		
-		function sanitizedParam($param) {
-		$pattern[0] = "%,%";
-	        $pattern[1] = "%#%";
-	        $pattern[2] = "%\(%";
-       		$pattern[3] = "%\)%";
-	        $pattern[4] = "%\{%";
-	        $pattern[5] = "%\}%";
-	        $pattern[6] = "%<%";
-	        $pattern[7] = "%>%";
-	        $pattern[8] = "%`%";
-	        $pattern[9] = "%!%";
-	        $pattern[10] = "%\\$%";
-	        $pattern[11] = "%\%%";
-	        $pattern[12] = "%\^%";
-	        $pattern[13] = "%=%";
-	        $pattern[14] = "%\+%";
-	        $pattern[15] = "%\|%";
-	        $pattern[16] = "%\\\%";
-	        $pattern[17] = "%:%";
-	        $pattern[18] = "%'%";
-	        $pattern[19] = "%\"%";
-	        $pattern[20] = "%;%";
-	        $pattern[21] = "%~%";
-	        $pattern[22] = "%\[%";
-	        $pattern[23] = "%\]%";
-	        $pattern[24] = "%\*%";
-	        $pattern[25] = "%&%";
-        	$sanitizedParam = preg_replace($pattern, "", $param);
-		return $sanitizedParam;
-	}
-	
-	function verifyChecksum($checksum, $all, $secret) {
-		$hash = hash_hmac('sha256', $all , $secret);
-		$cal_checksum = $hash;
-		$bool = 0;
-		if($checksum == $cal_checksum)	{
-			$bool = 1;
-		}
-		return $bool;
-	}
-		
-		$order_id = JRequest::getString('ORDERID', 0);
-		$res_code = JRequest::getString('RESPCODE',0);
-		$res_desc = JRequest::getString('RESPMSG',0);
-		$checksum_recv = JRequest::getString('CHECKSUMHASH',0);
-		//$input = JFactory::getApplication->input;
-		$paramList = JRequest::get( 'post' );
-		$amount = JRequest::getString('TXNAMOUNT',0);	
-		$all = ("'". $order_id ."''". $res_code ."''". $res_desc." " ."'");
-		
-		$bool = 0;
-		//$bool = verifyChecksum($checksum_recv, $all, $method->secret_key);
-		$bool = verifychecksum_e($paramList, $method->secret_key, $checksum_recv);
-	
-	if($bool == 1){
-			
-	if($res_code=="01")
-		{
-			// Create an array having all required parameters for status query.
-			$requestParamList = array("MID" => $method->merchant_id , "ORDERID" => $order_id);
-			
-			$StatusCheckSum = getChecksumFromArray($requestParamList, $method->secret_key);
-							
-			$requestParamList['CHECKSUMHASH'] = $StatusCheckSum;
-			
-			// Call the PG's getTxnStatus() function for verifying the transaction status.
-			/*	19751/17Jan2018	*/
-				/*if($mode=='0') {
-					$check_status_url = 'https://pguat.paytm.com/oltp/HANDLER_INTERNAL/getTxnStatus';
-				} else {
-					$check_status_url = 'https://secure.paytm.in/oltp/HANDLER_INTERNAL/getTxnStatus';
-				}*/
+		if(isset($_GET['extra']) && isset($_GET['extraConfigKey'])){
+	    	$method = $this->getVmPluginMethod($_GET['extraConfigKey']);
+			$json=array();
+			if($_GET['extra']=='ajaxCall'){
+				$codeApply='wrong';
+				unset($_POST['CHECKSUMHASH']);
+				if(isset($_POST['PROMO_CAMP_ID'])){
+					unset($_POST['PROMO_CAMP_ID']);
+				}
+				if(isset($_POST['promoCode'])){
+					$promoCode=$_POST['promoCode'];
+					unset($_POST['promoCode']);
+					if(trim($promoCode)!=''){
+						$promocode_value = $method->promocode_value;
+						$promocode_local_validation = $method->local_validation;
+						if($promocode_local_validation=='1'){
+							$promocodeValueArr=explode(',',$promocode_value);
+							if(trim($promocodeValueArr[0])!=''){
+								foreach ($promocodeValueArr as $key => $value) {
+									if(trim($value)==trim($promoCode)){
+										$_POST['PROMO_CAMP_ID']=trim($value);
+										$codeApply='success';
+									}
+								}
+							}
+						}else{
+							$codeApply='success';
+							$_POST['PROMO_CAMP_ID']=trim($promoCode);
+						}
+					}else{
+						$codeApply='remove';
+					}
+				}
+				$checkSum = getChecksumFromArray($_POST, $method->secret_key);
+				$_POST['CHECKSUMHASH']=$checkSum;
+				// echo "<pre>";print_r($_POST);
+				$str='';
+				foreach ($_POST as $key => $value) {
+					$str.='<input name="'.$key.'"    type="hidden"  value="'.$value.'"   >';
+				}
+				$json['message']=$codeApply;
+				$json['hiddenFields']=$str;
+			}else{
+				$debug = array();
+				if(!function_exists("curl_init")){
+					$debug[0]["info"][] = "cURL extension is either not available or disabled. Check phpinfo for more info.";
 
-				/*if($mode=='0') {
-					$check_status_url = 'https://securegw-stage.paytm.in/merchant-status/getTxnStatus';
+				}else{ 
+					// this site homepage URL
+					$testing_urls = array(
+						JURI::base()."index.php",
+						"www.google.co.in",
+						"https://pguat.paytm.com/oltp/HANDLER_INTERNAL/getTxnStatus"
+					);
+					// loop over all URLs, maintain debug log for each response received
+					foreach($testing_urls as $key=>$url){
+						// echo $url."<br>";
+						$debug[$key]["info"][] = "Connecting to <b>" . $url . "</b> using cURL";
+
+						$ch = curl_init($url);
+						curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+						$res = curl_exec($ch);
+
+						if (!curl_errno($ch)) {
+							$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+							$debug[$key]["info"][] = "cURL executed succcessfully.";
+							$debug[$key]["info"][] = "HTTP Response Code: <b>". $http_code . "</b>";
+
+							// $debug[$key]["content"] = $res;
+
+						} else {
+							$debug[$key]["info"][] = "Connection Failed !!";
+							$debug[$key]["info"][] = "Error Code: <b>" . curl_errno($ch) . "</b>";
+							$debug[$key]["info"][] = "Error: <b>" . curl_error($ch) . "</b>";
+							break;
+						}
+						curl_close($ch);
+					}
+				}
+				foreach($debug as $k=>$v){
+					echo "<ul>";
+					foreach($v["info"] as $info){
+						echo "<li>".$info."</li>";
+					}
+					echo "</ul>";
+
+					// echo "<div style='display:none;'>" . $v["content"] . "</div>";
+					echo "<hr/>";
+				}
+				die;
+			}
+			echo json_encode($json);die;
+		}else if($_SERVER['REQUEST_METHOD'] == 'POST'){
+			if (!class_exists('VirtueMartCart'))
+		    	require(JPATH_VM_SITE . DS . 'helpers' . DS . 'cart.php');
+			if (!class_exists('shopFunctionsF'))
+			    require(JPATH_VM_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
+			if (!class_exists('VirtueMartModelOrders'))
+			    require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
+			$paytm_data = JRequest::get('post');
+			// the payment itself should send the parameter needed.
+			$virtuemart_paymentmethod_id = JRequest::getInt('pm', 0);
+			$order_number = JRequest::getString('on', 0);
+			
+			
+			$vendorId = 0;
+			if (!($method = $this->getVmPluginMethod($virtuemart_paymentmethod_id))) {
+			    return null; // Another method was selected, do nothing
+			}
+			if (!$this->selectedThisElement($method->payment_element)) {
+			    return null;
+			}	
+			if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($order_number))) {
+			    return null;
+			}
+			if (!($paymentTable = $this->getDataByOrderId($virtuemart_order_id) )) {
+			    return '';
+			}
+			
+			$payment_name = $this->renderPluginName($method);
+			
+			function sanitizedParam($param) {
+				$pattern[0] = "%,%";
+				$pattern[1] = "%#%";
+				$pattern[2] = "%\(%";
+				$pattern[3] = "%\)%";
+				$pattern[4] = "%\{%";
+				$pattern[5] = "%\}%";
+				$pattern[6] = "%<%";
+				$pattern[7] = "%>%";
+				$pattern[8] = "%`%";
+				$pattern[9] = "%!%";
+				$pattern[10] = "%\\$%";
+				$pattern[11] = "%\%%";
+				$pattern[12] = "%\^%";
+				$pattern[13] = "%=%";
+				$pattern[14] = "%\+%";
+				$pattern[15] = "%\|%";
+				$pattern[16] = "%\\\%";
+				$pattern[17] = "%:%";
+				$pattern[18] = "%'%";
+				$pattern[19] = "%\"%";
+				$pattern[20] = "%;%";
+				$pattern[21] = "%~%";
+				$pattern[22] = "%\[%";
+				$pattern[23] = "%\]%";
+				$pattern[24] = "%\*%";
+				$pattern[25] = "%&%";
+				$sanitizedParam = preg_replace($pattern, "", $param);
+				return $sanitizedParam;
+			}
+		
+			function verifyChecksum($checksum, $all, $secret) {
+				$hash = hash_hmac('sha256', $all , $secret);
+				$cal_checksum = $hash;
+				$bool = 0;
+				if($checksum == $cal_checksum)	{
+					$bool = 1;
+				}
+				return $bool;
+			}
+			
+			$order_id = JRequest::getString('ORDERID', 0);
+			$res_code = JRequest::getString('RESPCODE',0);
+			$res_desc = JRequest::getString('RESPMSG',0);
+			$checksum_recv = JRequest::getString('CHECKSUMHASH',0);
+			//$input = JFactory::getApplication->input;
+			$paramList = JRequest::get( 'post' );
+			$amount = JRequest::getString('TXNAMOUNT',0);	
+			$all = ("'". $order_id ."''". $res_code ."''". $res_desc." " ."'");
+			
+			$bool = 0;
+			//$bool = verifyChecksum($checksum_recv, $all, $method->secret_key);
+			$bool = verifychecksum_e($paramList, $method->secret_key, $checksum_recv);
+		
+			if($bool == 1){
+					
+				if($res_code=="01") {
+					// Create an array having all required parameters for status query.
+					$requestParamList = array("MID" => $method->merchant_id , "ORDERID" => $order_id);
+					
+					$StatusCheckSum = getChecksumFromArray($requestParamList, $method->secret_key);
+									
+					$requestParamList['CHECKSUMHASH'] = $StatusCheckSum;
+					
+					$check_status_url = $method->transaction_status_url;
+					$responseParamList = callNewAPI($check_status_url, $requestParamList);
+					if($responseParamList['STATUS']=='TXN_SUCCESS' && $responseParamList['TXNAMOUNT']==$amount)
+					{			
+						echo '<br><tr><td width="50%" align="center" valign="middle">Thank you for shopping with us. Your account has been charged and your transaction is successful. We will be shipping your order to you soon.</td></tr><br>';
+						$new_status = $method->status_success;
+					}
+					else{
+						echo '<tr><td width="50%" align="center" valign="middle">It seems some issue in server to server communication. Kindly connect with administrator.</td> </tr>';
+						$new_status = $method->status_canceled;
+					}
+								
 				} else {
-					$check_status_url = 'https://securegw.paytm.in/merchant-status/getTxnStatus';
-				}*/
-			/*	19751/17Jan2018 end	*/
-			$check_status_url = $method->transaction_status_url;
-			$responseParamList = callNewAPI($check_status_url, $requestParamList);
-			if($responseParamList['STATUS']=='TXN_SUCCESS' && $responseParamList['TXNAMOUNT']==$amount)
-			{			
-				echo '<br><tr><td width="50%" align="center" valign="middle">Thank you for shopping with us. Your account has been charged and your transaction is successful. We will be shipping your order to you soon.</td></tr><br>';
-				$new_status = $method->status_success;
-			}
-			else{
-				echo '<tr><td width="50%" align="center" valign="middle">It seems some issue in server to server communication. Kindly connect with administrator.</td> </tr>';
+					echo '<tr><td width="50%" align="center" valign="middle">Thank you for shopping with us. The response is compromised</td></tr><br>'; 
+						$new_status = $method->status_pending;		
+				}
+			} else {
+				echo '<tr><td width="50%" align="center" valign="middle">Security Error. Response compromised.</td> </tr>';
 				$new_status = $method->status_canceled;
+							
 			}
-						
-		}
-		else
-		{
+			function vmModel($model=null) {
+				if(!class_exists('VmModel'))
+					require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmmodel.php');
+				return vmModel::getModel($model);
+			}
 			
-			echo '<tr><td width="50%" align="center" valign="middle">Thank you for shopping with us. The response is compromised</td></tr><br>'; 
-				$new_status = $method->status_pending;		
-		}
+			$modelOrder = vmModel('orders');
+			$order['order_status'] = $new_status;
+			$order['customer_notified'] = 0;
+			$order['comments'] = '';
+			$modelOrder->updateStatusForOneOrder($virtuemart_order_id, $order, true);
+			
+			$this->_storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $paymentTable->paytm_custom);
+			if($res_code==100){		
+				$html = $this->_getPaymentResponseHtml($paymentTable, $payment_name, $res_code, $res_desc);
+			} else{
+				$cancel_return = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginUserPaymentCancel&on=' .$order_number.'&pm='.$virtuemart_paymentmethod_id);
+				$html= ' <script type="text/javascript">';
+				$html.= 'window.location = "'.$cancel_return.'"';
+				$html.= ' </script>';
+				JRequest::setVar('html', $html);
 			}
 		
-		else
-		{
-			
-			echo '<tr><td width="50%" align="center" valign="middle">Security Error. Response compromised.</td> </tr>';
-			$new_status = $method->status_canceled;
-						
+			//We delete the old stuff
+			// get the correct cart / session
+			$cart = VirtueMartCart::getCart();
+			$cart->emptyCart();
+			return true;
+		}else{
+			$protocol='http://';
+			$host='';
+			if (isset($_SERVER['HTTPS']) && (($_SERVER['HTTPS'] == 'on') || ($_SERVER['HTTPS'] == '1'))) {
+        		$protocol='https://';
+	    	}
+    
+			if (isset($_SERVER["HTTP_HOST"]) && ! empty($_SERVER["HTTP_HOST"])) {
+				$host=$_SERVER["HTTP_HOST"];
+			}
+			header("Location: {$protocol}{$host}");
+			return false;
 		}
-		function vmModel($model=null)
-		{
-			if(!class_exists('VmModel'))
-			require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmmodel.php');
-			return vmModel::getModel($model);
-		}
-		
-		$modelOrder = vmModel('orders');
-		$order['order_status'] = $new_status;
-		$order['customer_notified'] = 0;
-		$order['comments'] = '';
-		$modelOrder->updateStatusForOneOrder($virtuemart_order_id, $order, true);
-		
-		$this->_storePaytmInternalData($method, $order_id, $res_code, $res_desc, $virtuemart_order_id, $paymentTable->paytm_custom);
-		if($res_code==100){		
-			$html = $this->_getPaymentResponseHtml($paymentTable, $payment_name, $res_code, $res_desc);
-		}
-		else{
-			$cancel_return = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginUserPaymentCancel&on=' .$order_number.'&pm='.$virtuemart_paymentmethod_id);
-			$html= ' <script type="text/javascript">';
-			$html.= 'window.location = "'.$cancel_return.'"';
-			$html.= ' </script>';
-			JRequest::setVar('html', $html);
-		}
-	
-		//We delete the old stuff
-		// get the correct cart / session
-		$cart = VirtueMartCart::getCart();
-		$cart->emptyCart();
-		return true;
     }
     
 	function _getPaymentResponseHtml($paymentTable, $payment_name, $res_code, $res_desc) {
@@ -635,9 +714,6 @@ if($callbackflag == '1')
 		return true;
     }
     
-	
-	
-    
 	function plgVmOnShowOrderBEPayment($virtuemart_order_id, $payment_method_id) {
 		if (!$this->selectedThisByMethodId($payment_method_id)) {
 		    return null; // Another method was selected, do nothing
@@ -680,10 +756,7 @@ if($callbackflag == '1')
 		    return '';
 		}
 		return $paymentTable;
-    } 
-	
-	
-  
+    }
     
 	function getCosts(VirtueMartCart $cart, $method, $cart_prices) {
 		
