@@ -571,8 +571,8 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			$paramList = JRequest::get( 'post' );
 			$amount = JRequest::getString('TXNAMOUNT',0);	
 			// $mode = JRequest::getString('PAYMENTMODE',0);
-			$transaction_url = JRequest::getString('TRANSACTIONURL',0);
-			$transaction_status_url = JRequest::getString('TRANSACTIONSTATUSURL',0);
+			$transaction_url = $method->transaction_url;
+			$transaction_status_url = $method->transaction_status_url;
 			$payment_id = JRequest::getString('TXNID',0);
 			$all = ("'". $order_id ."''". $res_code ."''". $res_desc." " ."'");
 			
