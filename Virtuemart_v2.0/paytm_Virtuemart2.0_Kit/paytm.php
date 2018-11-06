@@ -455,8 +455,8 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 					// this site homepage URL
 					$testing_urls = array(
 						JURI::base()."index.php",
-						"www.google.co.in",
-						"https://pguat.paytm.com/oltp/HANDLER_INTERNAL/getTxnStatus"
+						"https://www.gstatic.com/generate_204",
+						"https://securegw.paytm.in/merchant-status/getTxnStatus"
 					);
 					// loop over all URLs, maintain debug log for each response received
 					foreach($testing_urls as $key=>$url){
