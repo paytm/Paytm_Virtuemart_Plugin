@@ -3,14 +3,10 @@
 	<name>VM - Payment, Paytm</name>
 	<files>
 		<filename plugin="paytm">paytm.php</filename>
-		<filename plugin="paytm">encdec_paytm.php</filename>
+		<filename plugin="paytm">includes/PaytmChecksum.php</filename>
+		<filename plugin="paytm">includes/PaytmConstants.php</filename>
+		<filename plugin="paytm">includes/PaytmHelper.php</filename>
 	</files>
-	<media folder="images" destination="../images/stories/virtuemart/payment">
-		<filename>paytm.jpg</filename>
-    </media>
-    <languages>
-		<language tag="en-GB">en-GB.plg_vmpayment_paytm.ini</language>
-    </languages>
 	<vmconfig>
 		<fields name="params">
 			<fieldset name="payment"  addfieldpath="/administrator/components/com_virtuemart/fields">
@@ -25,17 +21,21 @@
 				<field type="text" name="website_name"  size="60" label="PAYTM Website Name"/>
 				<field type="text" name="channel_id"  size="60" label="PAYTM Channel Id"/>
 				<field type="text" name="custom_callback_url"  size="60" label="Custom CallBack Url (If you want, Ex: https://test.com/)"/>
-				<field type="text" name="transaction_url"  size="60" label="Transaction URL"/>
+				<!-- <field type="text" name="transaction_url"  size="60" label="Transaction URL"/>
 				<field type="text" name="transaction_status_url"  size="60" label="Transaction Status URL"/>
 				<field name="promocode_status" type="list" default="Disabled" label="Promo Code Status">
 					<option value="0">Disabled</option>
 					<option value="1">Enabled</option>
-				</field>
+				</field> -->
 				<field name="local_validation" type="list" default="Disabled" label="Local Validation">
 					<option value="0">Disabled</option>
 					<option value="1">Enabled</option>
 				</field>
-				<field type="text" name="promocode_value"  size="60" label="Promo Codes (Ex: test1, test2)"/>
+				<field name="environment" type="list" default="Staging" label="Environment">
+					<option value="0">Staging</option>
+					<option value="1">Production</option>
+				</field>
+				<!-- <field type="text" name="promocode_value"  size="60" label="Promo Codes (Ex: test1, test2)"/> -->
 				<field name="log" type="radio" default="ON" label="Log params posting to Paytm">
 					<option value="on">ON</option>
 					<option value="off">OFF</option>

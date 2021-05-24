@@ -5,7 +5,10 @@ if (!class_exists('vmPSPlugin')){
   require(JPATH_VM_PLUGINS . DS . 'vmpsplugin.php');
 }		
 
-require (VMPATH_ROOT . DS . 'plugins' . DS . 'vmpayment' . DS . 'paytm' . DS .  'encdec_paytm.php');
+//require (VMPATH_ROOT . DS . 'plugins' . DS . 'vmpayment' . DS . 'paytm' . DS .  'encdec_paytm.php');
+require (VMPATH_ROOT . DS . 'plugins' . DS . 'vmpayment' . DS . 'paytm' . DS . 'includes' . DS .  'PaytmChecksum.php');
+require (VMPATH_ROOT . DS . 'plugins' . DS . 'vmpayment' . DS . 'paytm' . DS . 'includes' . DS .  'PaytmConstants.php');
+require (VMPATH_ROOT . DS . 'plugins' . DS . 'vmpayment' . DS . 'paytm' . DS . 'includes' . DS .  'PaytmHelper.php');
 
 class plgVmPaymentPaytm extends vmPSPlugin {
 
@@ -250,10 +253,9 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			error_log("Paytm Secret Key : ".$secret_key);
 		}
 
-		
-		$checksum = getChecksumFromArray($post_variables, $secret_key);	
+		//$checksum = getChecksumFromArray($post_variables, $secret_key);	
 
-		$post_variables['CHECKSUMHASH'] =$checksum;
+		//$post_variables['CHECKSUMHASH'] =$checksum;
 		$dbValues['order_number'] = $order['details']['BT']->order_number;
 		$dbValues['payment_name'] = $this->renderPluginName($method, $order);
 		$dbValues['virtuemart_paymentmethod_id'] = $cart->virtuemart_paymentmethod_id;
@@ -271,122 +273,120 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		// add spin image
 		$html = '<html><head><title>Redirection</title></head><body><div style="margin: auto; text-align: center;">';
 		$autoSubmit=true;
-		if(isset($promocode_status) && isset($local_validation) && isset($promocode_value)){
-			if($promocode_status=='1'){
-				if(($local_validation=='1' && trim($promocode_value)!='') || $local_validation=='0'){
-					$html.=@'
-							<style type="text/css">
-								.borderRed{
-									border-color: red;
-								}
-								.blueBtn, .blueBtn:hover{
-									background-color: blue !important;
-									border-color: blue !important;
-								}
-								.redBtn, .redBtn:hover{
-									background-color: red !important;
-									border-color: red !important;
-								}
-								.redColor{
-									color: red !important;
-								}
-								.greenColor{
-									color: green !important;
-								}
-							</style>
-						  	<div class="form-group">
-						  		<div class="col-md-4">
-						  		</div>
-						  		<div class="col-md-8" style="margin-bottom: 5px;">
-									<span class="input-group-btn">
-						  				<input type="text" id="promoCode" class="form-control pull-left" placeholder="Paytm Promo Code" style="width: 70%;margin-bottom:0;">
-										<button id="" class="btn btn-primary pull-right btnPromoCode blueBtn" type="button">Apply</button>
-									</span>
-									<span class="messSpan" style="width:80%;float:left;text-align:left;"></span>
-						  		</div>
-						  	</div>
-					';
-					$autoSubmit=false;
-				}
-			}
-		}
+		
 		$titName=JText::_('VMPAYMENT_PAYTM_REDIRECT_MESSAGE1');
 		if($autoSubmit){
 			$titName=JText::_('VMPAYMENT_PAYTM_REDIRECT_MESSAGE');
 		}
-		$html .= '<form action="' . $url . '" method="post" name="vm_paytm_form" id="checkout" >';
-		$html.= '<input type="submit"  value="' . $titName . '" style="margin:15px 20% 0 20%;" class="btn-primary" />';
-		$html.='<div class="hiddenFormPaytmFieldsDiv">';
-		foreach ($post_variables as $name => $value) {
-		    $html.= '<input type="hidden" style="" name="' . $name . '" value="' . $value . '" />';
-		}
-		$html.='</div>';
-
-		$html.= '</form></div>';
-		$html.= ' <script type="text/javascript">';
 		if($autoSubmit){
-			$html.= ' document.vm_paytm_form.submit();';
+			/* body parameters */
+			$paytmParams["body"] = array(
+				"requestType" => "Payment",
+				"mid" => $merchant_id,
+				"websiteName" => $website_name,
+				"orderId" => $order_id,
+				"callbackUrl" => JURI::base() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm',
+				"txnAmount" => array(
+					"value" => $amount,
+					"currency" => "INR",
+				),
+				"userInfo" => array(
+					"custId" => $email,
+				),
+			);
+			
+			$checksum = PaytmChecksum::generateSignature(json_encode($paytmParams["body"], JSON_UNESCAPED_SLASHES),$secret_key); 
+			
+			$paytmParams["head"] = array(
+				"signature"	=> $checksum
+			);
+			
+			/* prepare JSON string for request */
+			$post_data = json_encode($paytmParams, JSON_UNESCAPED_SLASHES);
 
-		}else{
-			$html.= @'
-				jQuery(document).ready(function(){
-					jQuery(".btnPromoCode").click(function(){
-						jQuery(".messSpan").html("");
-						jQuery(".messSpan").removeClass("greenColor");
-						jQuery(".messSpan").removeClass("redColor");
-						if(jQuery.trim(jQuery("#promoCode").val())!=""){
-							if(jQuery(".btnPromoCode").hasClass("redBtn")){
-								jQuery("#promoCode").val("");
+			$url = PaytmHelper::getPaytmURL(PaytmConstants::INITIATE_TRANSACTION_URL,$method->environment) . '?mid='.$merchant_id.'&orderId='.$order_id;
+
+			$res= PaytmHelper::executecUrl($url, $post_data);
+			if(!empty($res['body']['resultInfo']['resultStatus']) && $res['body']['resultInfo']['resultStatus'] == 'S'){
+				$data['txnToken']= $res['body']['txnToken'];
+			}
+			else
+			{
+				$data['txnToken']="";
+			}
+
+
+			$checkout_url = str_replace('MID',$merchant_id, PaytmHelper::getPaytmURL(PaytmConstants::CHECKOUT_JS_URL,$method->environment));
+			$html='<style type="text/css">
+					#paytm-pg-spinner {margin: 20% auto 0;width: 70px;text-align: center;z-index: 999999;position: relative;}
+
+					#paytm-pg-spinner > div {width: 10px;height: 10px;background-color: #012b71;border-radius: 100%;display: inline-block;-webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;animation: sk-bouncedelay 1.4s infinite ease-in-out both;}
+
+					#paytm-pg-spinner .bounce1 {-webkit-animation-delay: -0.64s;animation-delay: -0.64s;}
+
+					#paytm-pg-spinner .bounce2 {-webkit-animation-delay: -0.48s;animation-delay: -0.48s;}
+					#paytm-pg-spinner .bounce3 {-webkit-animation-delay: -0.32s;animation-delay: -0.32s;}
+
+					#paytm-pg-spinner .bounce4 {-webkit-animation-delay: -0.16s;animation-delay: -0.16s;}
+					#paytm-pg-spinner .bounce4, #paytm-pg-spinner .bounce5{background-color: #48baf5;} 
+					.notice{display:none;}
+					.message{display:none;}
+					@-webkit-keyframes sk-bouncedelay {0%, 80%, 100% { -webkit-transform: scale(0) }40% { -webkit-transform: scale(1.0) }}
+
+					@keyframes sk-bouncedelay { 0%, 80%, 100% { -webkit-transform: scale(0);transform: scale(0); } 40% { 
+					    -webkit-transform: scale(1.0); transform: scale(1.0);}}
+					.paytm-overlay{width: 100%;top: 0px;opacity: .4;height: 100%;background: #000;}
+
+					</style><script type="application/javascript" crossorigin="anonymous" src="'.$checkout_url.'"></script><div id="paytm-pg-spinner" class="paytm-woopg-loader"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div><div class="bounce4"></div><div class="bounce5"></div><p class="loading-paytm">Loading Paytm...</p></div><div class="paytm-overlay paytm-woopg-loader"></div>';
+			$html .=  '<script type="text/javascript">
+				function invokeBlinkCheckoutPopup(){
+				window.Paytm.CheckoutJS.init({
+					"root": "",
+					"flow": "DEFAULT",
+					"data": {
+						"orderId": "'.$order_id.'",
+						"token": "'.$data['txnToken'].'",
+						"tokenType": "TXN_TOKEN",
+						"amount": "'.$amount.'",
+					},
+					"integration": {
+						"platform": "VirtueMart",
+						"version": "3.8|'.PaytmConstants::PLUGIN_VERSION.'"
+					},
+					handler:{
+							transactionStatus:function(data){
+						} , 
+						notifyMerchant:function notifyMerchant(eventName,data){
+							if(eventName=="APP_CLOSED")
+							{
+								jQuery(".paytm-overlay").hide();
+								jQuery(".paytm-pg-loader").hide();
 							}
-							jQuery.ajax({
-								url: "index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&pm=paytm&extra=ajaxCall&extraConfigKey='.$extraConfigKey.'",
-								type: "post",
-								dataType: "json",
-								data: jQuery("form#checkout").serialize() + "&promoCode="+jQuery("#promoCode").val(),
-								success: function(res){
-									// console.log("jqueryAjax res".res);
-									if(res.message.length > 0){
-										if(res.message=="success"){
-											jQuery(".btnPromoCode").addClass("redBtn");
-											jQuery(".btnPromoCode").removeClass("blueBtn");
-											jQuery(".btnPromoCode").html("Remove");
-											jQuery("#promoCode").attr("disabled",true);
-											jQuery("#promoCode").prop("disabled",true);
-											jQuery(".messSpan").html("Applied Successfully");
-											jQuery(".messSpan").addClass("greenColor");
-										}else if(res.message=="remove"){
-											jQuery(".btnPromoCode").removeClass("redBtn");
-											jQuery(".btnPromoCode").addClass("blueBtn");
-											jQuery(".btnPromoCode").html("Apply");
-											jQuery("#promoCode").attr("disabled",false);
-											jQuery("#promoCode").prop("disabled",false);
-										}else{
-											jQuery(".messSpan").html("Incorrect Promo Code");
-											jQuery(".messSpan").addClass("redColor");
-											jQuery("#promoCode").addClass("borderRed");
-										}
-									}	
-									if(res.hiddenFields.length > 0){
-										jQuery(".hiddenFormPaytmFieldsDiv").html(res.hiddenFields);		
-									}
-								}
-							});
-							jQuery("#promoCode").removeClass("borderRed");
-						}else{
-							jQuery("#promoCode").addClass("borderRed");
+							console.log("notify merchant about the payment state");
+						} 
 						}
-					});
+				}).then(function(){
+					window.Paytm.CheckoutJS.invoke();
 				});
-			';
+				}
+				jQuery(function(){
+					setTimeout(function(){invokeBlinkCheckoutPopup()},2000);
+				});
+				</script>
+				';
+				//exit();
+		
 		}
-		$html.= ' </script></body></html>';
-	
+		$html.= ' </body></html>';
 		// 	2 = don't delete the cart, don't send email and don't redirect
-		$cart->_confirmDone = false;
-		$cart->_dataValidated = false;
-		$cart->setCartIntoSession();
-		//	JRequest::setVar('html', $html);
-		return $this->processConfirmedOrderPaymentResponse ('', $cart, $order, $html, '', '');
+		//$cart->_confirmDone = false;
+		//$cart->_dataValidated = false;
+		//$cart->setCartIntoSession();
+		//JRequest::setVar('html', $html);
+		$mainframe = JFactory::getApplication ();
+		$mainframe->enqueueMessage ($html);
+		$mainframe->redirect (JRoute::_ ('index.php?option=com_virtuemart&view=cart',TRUE));
+		//return $this->processConfirmedOrderPaymentResponse ('', $cart, $order, $html, '', '');
     }
     
 	function plgVmgetPaymentCurrency($virtuemart_paymentmethod_id, &$paymentCurrencyId) {
@@ -576,19 +576,40 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 			$payment_id = JRequest::getString('TXNID',0);
 			$all = ("'". $order_id ."''". $res_code ."''". $res_desc." " ."'");
 			
-			if(verifychecksum_e($paramList, $method->secret_key, $checksum_recv)){
+			if(!empty($_POST['CHECKSUMHASH'])){
+				$post_checksum = $_POST['CHECKSUMHASH'];
+				unset($_POST['CHECKSUMHASH']);	
+			}else{
+				$post_checksum = "";
+			}
+			$isValidChecksum = PaytmChecksum::verifySignature($_POST, $method->secret_key, $post_checksum);
+
+			//if(verifychecksum_e($paramList, $method->secret_key, $checksum_recv)){
+			if($isValidChecksum === true){	
 				
 			  	if($res_code=="01")
 			  	{			
 			  		// Create an array having all required parameters for status query.
 					$requestParamList = array("MID" => $method->merchant_id , "ORDERID" => $order_id);
 					
-					$StatusCheckSum = getChecksumFromArray($requestParamList, $method->secret_key);
+					$requestParamList['CHECKSUMHASH'] = PaytmChecksum::generateSignature($requestParamList, $method->secret_key);
+
+					if($_REQUEST['STATUS'] == 'TXN_SUCCESS' || $_REQUEST['RESPMSG'] == 'PENDING'){
+							/* number of retries untill cURL gets success */
+							$retry = 1;
+							do{
+								$postData = 'JsonData='.urlencode(json_encode($requestParamList));
+								$responseParamList = PaytmHelper::executecUrl(PaytmHelper::getPaytmURL(PaytmConstants::ORDER_STATUS_URL, $method->environment), $postData);
+								$retry++;
+							} while(!$responseParamList['STATUS'] && $retry < PaytmConstants::MAX_RETRY_COUNT);
+							/* number of retries untill cURL gets success */
+						}
+					//$StatusCheckSum = getChecksumFromArray($requestParamList, $method->secret_key);
 							
-					$requestParamList['CHECKSUMHASH'] = $StatusCheckSum;
+					//$requestParamList['CHECKSUMHASH'] = $StatusCheckSum;
 					
-					$check_status_url = $transaction_status_url;
-					$responseParamList = callNewAPI($check_status_url, $requestParamList);
+					//$check_status_url = $transaction_status_url;
+					//$responseParamList = callNewAPI($check_status_url, $requestParamList);
 					if($responseParamList['STATUS']=='TXN_SUCCESS' && $responseParamList['TXNAMOUNT']==$amount)
 					{			
 						echo '<br><tr><td width="50%" align="center" valign="middle">Thank you for shopping with us. Your account has been charged and your transaction is successful. We will be shipping your order to you soon.</td></tr><br>';

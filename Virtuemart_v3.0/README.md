@@ -15,24 +15,16 @@ The Plugin is provided in the form of a zip file.
 # Installation and Configuration
 
  1. Upload the paytm_Virtuemart3.0_Kit.zip using extension manager in joomla.
- 2. Put php file encdec_paytm.php to location <ROOT Directory>/plugins/vmpayment/paytm/ .
- 3. Enable Paytm payment method in plugin manager.
- 4. Login to Administrator Area - site administrator panel.
- 5. Select VirtueMart Store panel in the drop list.
- 6. Click on Shop in left menu than Click on Payment Methods.
- 7. Give the Payment method name, and select YES to publish.
- 8. Choose the paytm Payment Method in dropdown box. 
- 9. Then Click on Save button to generate the configuration parameters.
- 10. Go to the Configuration tab.
- 11. Now you can fill the parameters listed in Configuration tab.
- 12. You should give the paytm Merchant id, Secret key, Transaction URL, Transaction Status URL and description in the listed parameters on configuration tab. These parameters are Mandatory.
- 13. Then click Save & Close.
+ 2. Enable Paytm payment method in plugin manager.
+ 3. Login to Administrator Area - site administrator panel.
+ 4. Select VirtueMart Store panel in the drop list.
+ 5. Click on Shop in left menu than Click on Payment Methods.
+ 6. Give the Payment method name, and select YES to publish.
+ 7. Choose the paytm Payment Method in dropdown box. 
+ 8. Then Click on Save button to generate the configuration parameters.
+ 9. Go to the Configuration tab.
+ 10. Now you can fill the parameters listed in Configuration tab.
+ 11. You should give the paytm Merchant id, Secret key, Transaction URL, Transaction Status URL and description in the listed parameters on configuration tab. These parameters are Mandatory.
+ 12. Then click Save & Close.
 
-# Paytm PG URL Details
-	staging	
-		Transaction URL             => https://securegw-stage.paytm.in/theia/processTransaction
-		Transaction Status Url      => https://securegw-stage.paytm.in/merchant-status/getTxnStatus
 
-	Production
-		Transaction URL             => https://securegw.paytm.in/theia/processTransaction
-		Transaction Status Url      => https://securegw.paytm.in/merchant-status/getTxnStatus
