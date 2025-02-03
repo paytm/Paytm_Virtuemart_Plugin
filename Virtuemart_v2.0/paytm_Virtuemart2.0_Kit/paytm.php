@@ -391,7 +391,6 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 		$mainframe->enqueueMessage ($html);
 		$mainframe->redirect (JRoute::_ ('index.php?option=com_virtuemart&view=cart',TRUE));
 
-		}
     }
     
 	function plgVmgetPaymentCurrency($virtuemart_paymentmethod_id, &$paymentCurrencyId) {
@@ -458,7 +457,7 @@ class plgVmPaymentPaytm extends vmPSPlugin {
 					$testing_urls = array(
 						JURI::base()."index.php",
 						"https://www.gstatic.com/generate_204",
-						"https://securegw.paytm.in/merchant-status/getTxnStatus"
+						"https://secure.paytmpayments.com/merchant-status/getTxnStatus"
 					);
 					// loop over all URLs, maintain debug log for each response received
 					foreach($testing_urls as $key=>$url){

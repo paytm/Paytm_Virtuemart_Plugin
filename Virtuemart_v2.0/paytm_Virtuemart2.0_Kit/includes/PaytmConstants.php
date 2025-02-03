@@ -1,11 +1,11 @@
 <?php
 
 class PaytmConstants{
-	CONST TRANSACTION_STATUS_URL_PRODUCTION		= "https://securegw.paytm.in/order/status";
-	CONST TRANSACTION_STATUS_URL_STAGING		= "https://securegw-stage.paytm.in/order/status";
+	CONST TRANSACTION_STATUS_URL_PRODUCTION		= "https://secure.paytmpayments.com/order/status";
+	CONST TRANSACTION_STATUS_URL_STAGING		= "https://securestage.paytmpayments.com/order/status";
 
-	CONST PRODUCTION_HOST						= "https://securegw.paytm.in/";
-	CONST STAGING_HOST							= "https://securegw-stage.paytm.in/";
+	CONST PRODUCTION_HOST						= "https://secure.paytmpayments.com/";
+	CONST STAGING_HOST							= "https://securestage.paytmpayments.com/";
 
 	CONST ORDER_PROCESS_URL						= "order/process";
 	CONST ORDER_STATUS_URL						= "order/status";
@@ -17,7 +17,7 @@ class PaytmConstants{
 	CONST CHANNEL_ID							= "WEB";
 	CONST APPEND_TIMESTAMP						= true;
 	CONST X_REQUEST_ID							= "PLUGIN_WOOCOMMERCE_";
-	CONST PLUGIN_DOC_URL						= "https://developer.paytm.com/docs/eCommerce-plugin/woocommerce/";
+	CONST PLUGIN_DOC_URL						= "https://developer.paytm.com/docs/eCommerce-plugin/";
 
 	CONST MAX_RETRY_COUNT						= 3;
 	CONST CONNECT_TIMEOUT						= 10;
@@ -26,7 +26,7 @@ class PaytmConstants{
 	CONST LAST_UPDATED							= "20230830";
 	CONST PLUGIN_VERSION						= "2.1";
 
-	CONST CUSTOM_CALLBACK_URL					= "http://localhost/platform/wordpress/woocommerce/";
+	CONST CUSTOM_CALLBACK_URL					= "http://localhost/platform/wordpress/";
 
 
 	CONST ID									= "paytm";
